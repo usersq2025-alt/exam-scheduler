@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مولّد جداول الاختبارات</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
+:root {
+  --rose: #c2185b; --rose-light: #f8bbd9; --rose-pale: #fce4ec;
+  --rose-deep: #880e4f; --cream: #fff9f5; --text: #2d1b2e;
+  --muted: #7a5c6e; --border: #e8c8d8; --shadow: rgba(194,24,91,0.12);
+  --blue: #1a237e; --blue-pale: #e8eaf6;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Tajawal', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; padding: 24px 16px 60px; }
+header { text-align: center; margin-bottom: 28px; }
+header h1 { font-size: 1.9rem; font-weight: 800; color: var(--rose-deep); }
+header p { color: var(--muted); font-size: 0.93rem; margin-top: 6px; }
+.card { background: #fff; border: 1.5px solid var(--border); border-radius: 18px; padding: 22px; margin-bottom: 18px; box-shadow: 0 4px 18px var(--shadow); }
+.card h2 { font-size: 1.02rem; font-weight: 700; color: var(--rose-deep); margin-bottom: 14px; }
+label { display: block; font-size: 0.87rem; font-weight: 500; color: var(--muted); margin-bottom: 5px; }
+input[type="text"], textarea { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: 'Tajawal', sans-serif; font-size: 0.95rem; color: var(--text); background: var(--cream); outline: none; transition: border-color .2s; }
+input[type="text"]:focus, textarea:focus { border-color: var(--rose); }
+textarea { min-height: 220px; resize: vertical; line-height: 1.8; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media(max-width:480px){ .row2 { grid-template-columns: 1fr; } }
+.mt { margin-top: 14px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: 12px; font-family: 'Tajawal', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; border: none; transition: transform .15s; }
+.btn:active { transform: scale(.97); }
+.btn-primary { background: linear-gradient(135deg, var(--rose-deep), var(--rose)); color: #fff; box-shadow: 0 4px 14px rgba(194,24,91,.35); width: 100%; margin-top: 6px; font-size: 1.05rem; }
+.btn-copy { background: var(--rose-pale); color: var(--rose-deep); }
+.btn-dl { background: linear-gradient(135deg, #1a237e, #3949ab); color: #fff; }
+.btn-share { background: linear-gradient(135deg, #1b5e20, #388e3c); color: #fff; }
+#output-section { display: none; }
+.out-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+.out-header span { font-weight: 700; color: var(--rose-deep); font-size: 0.95rem; }
+.out-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.out-box { background: #fff8fc; border: 1.5px solid var(--border); border-radius: 12px; padding: 16px; font-size: 0.97rem; line-height: 2; white-space: pre-wrap; word-break: break-word; }
+.vcf-raw { background: #f5f5f5; border: 1.5px solid #ddd; border-radius: 10px; padding: 14px; font-size: 0.78rem; direction: ltr; text-align: left; line-height: 1.6; max-height: 200px; overflow-y: auto; white-space: pre; font-family: monospace; margin-top: 12px; }
+.vcf-instr { background: #fffde7; border: 1.5px solid #ffe082; border-radius: 10px; padding: 14px; font-size: 0.85rem; color: #5d4037; line-height: 1.8; margin-top: 12px; }
+.vcf-instr ol { padding-right: 18px; margin-top: 6px; }
+.badge { background: var(--rose-pale); color: var(--rose-deep); font-size: 0.75rem; font-weight: 700; padding: 2px 10px; border-radius: 20px; }
+.hint { font-size: 0.81rem; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+.err { background: #fff0f0; border: 1.5px solid #ffcccc; border-radius: 10px; padding: 12px 16px; color: #c0392b; font-size: 0.9rem; display: none; margin-top: 12px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.legend span { background: var(--rose-pale); color: var(--rose-deep); border-radius: 8px; padding: 3px 10px; font-size: 0.82rem; font-weight: 600; }
+.tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.tab { flex: 1; padding: 9px; border-radius: 10px; border: 1.5px solid var(--border); background: #fff; font-family: 'Tajawal', sans-serif; font-size: 0.88rem; font-weight: 700; color: var(--muted); cursor: pointer; text-align: center; }
+.tab.active { background: var(--blue-pale); color: var(--blue); border-color: #9fa8da; }
+#ov { display: none; position: fixed; inset: 0; background: rgba(255,249,245,.92); z-index: 100; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+#ov.on { display: flex; }
+.ring { width: 50px; height: 50px; border: 5px solid var(--rose-light); border-top-color: var(--rose-deep); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#ov p { color: var(--rose-deep); font-weight: 700; }
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--rose-deep); color: #fff; padding: 10px 24px; border-radius: 30px; font-size: 0.9rem; font-weight: 600; opacity: 0; transition: all .35s; z-index: 9999; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎀 مولّد جداول الاختبارات</h1>
+  <p>الصقي البيانات بأي شكل — يعمل بدون إنترنت</p>
+</header>
+
+<div class="card">
+  <h2>⚙️ إعدادات الجدول</h2>
+  <div class="row2">
+    <div>
+      <label>يوم الاختبار</label>
+      <input type="text" id="exam-day" placeholder="الأربعاء 18-6">
+    </div>
+    <div>
+      <label>رقم اللجنة</label>
+      <input type="text" id="committee" placeholder="التاسعة عشر">
+    </div>
+  </div>
+  <div class="mt">
+    <label>رقم التواصل</label>
+    <input type="text" id="contact-phone" placeholder="+9##########">
+  </div>
+  <div class="mt">
+    <label>بادئة اسم جهة الاتصال في VCF</label>
+    <input type="text" id="vcf-prefix" value="21-">
+    <p class="hint">مثال: <strong>21-</strong> → سيكون الاسم: <strong>21- شفاء محمد</strong></p>
+  </div>
+</div>
+
+<div class="card">
+  <h2>📋 البيانات المنسوخة من Word</h2>
+  <label>الصقي النص كاملاً هنا — بأي تنسيق</label>
+  <textarea id="raw-data" placeholder="6:30&#10;ف&#10;113442&#10;شفاء محمد علي بلقاسم&#10;963946672366&#10;6:45&#10;ف&#10;..."></textarea>
+  <div class="legend">
+    <span>ف = فجراً</span><span>ض = ضحىً</span><span>ظ = ظهراً</span><span>ع = عصراً</span><span>م = مساءً</span>
+  </div>
+  <div class="err" id="err"></div>
+</div>
+
+<button class="btn btn-primary" onclick="processData()">✨ توليد الرسالة وملف VCF</button>
+
+<div id="output-section">
+  <br>
+  <div class="card">
+    <div class="out-header">
+      <span>📩 الرسالة</span>
+      <button class="btn btn-copy" onclick="copyMsg()">📋 نسخ</button>
+    </div>
+    <div class="out-box" id="msg-out"></div>
+  </div>
+
+  <div class="card">
+    <div class="out-header">
+      <span>📱 ملف VCF</span>
+      <span class="badge" id="vcf-count"></span>
+    </div>
+    <div class="tabs">
+      <button class="tab active" id="tab-dl-btn" onclick="showTab('dl')">⬇️ تحميل / مشاركة</button>
+      <button class="tab" id="tab-mn-btn" onclick="showTab('mn')">📋 نسخ يدوي</button>
+    </div>
+    <div id="tab-dl">
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:12px">جوال: اضغطي "فتح في جهات الاتصال" — كمبيوتر: اضغطي تحميل</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-share" onclick="openVCF()">📱 فتح في جهات الاتصال</button>
+        <button class="btn btn-dl" onclick="downloadVCF()">⬇️ تحميل (كمبيوتر)</button>
+      </div>
+    </div>
+    <div id="tab-mn" style="display:none">
+      <div class="vcf-instr">
+        <strong>كيفية الحفظ يدوياً:</strong>
+        <ol>
+          <li>اضغطي <strong>نسخ محتوى VCF</strong></li>
+          <li>افتحي Notepad والصقي المحتوى</li>
+          <li>احفظي الملف باسم <strong>contacts.vcf</strong></li>
+          <li>افتحي الملف لاستيراد جهات الاتصال</li>
+        </ol>
+      </div>
+      <div style="margin-top:12px">
+        <button class="btn btn-copy" onclick="copyVCF()">📋 نسخ محتوى VCF</button>
+      </div>
+      <div class="vcf-raw" id="vcf-raw"></div>
+    </div>
+  </div>
+</div>
+
+<div id="ov"><div class="ring"></div><p>جارٍ المعالجة…</p></div>
+<div class="toast" id="toast"></div>
+
+<script>
+var vcfContent = '';
+var msgContent = '';
+
+var PERIOD_MAP   = { 'ف':'فجراً', 'ض':'ضحىً', 'ظ':'ظهراً', 'ع':'عصراً', 'م':'مساءً' };
+var PERIOD_ORDER = ['فجراً','ضحىً','ظهراً','عصراً','مساءً','غير محدد'];
+
+function processData() {
+  var raw  = document.getElementById('raw-data').value.trim();
+  var day  = document.getElementById('exam-day').value.trim();
+  var com  = document.getElementById('committee').value.trim();
+  var ph   = document.getElementById('contact-phone').value.trim();
+  var pre  = document.getElementById('vcf-prefix').value.trim() || '21-';
+
+  document.getElementById('err').style.display = 'none';
+  if (!raw) { showErr('الرجاء لصق البيانات أولاً'); return; }
+  if (!day) { showErr('الرجاء إدخال يوم الاختبار'); return; }
+  if (!com) { showErr('الرجاء إدخال رقم اللجنة'); return; }
+
+  document.getElementById('ov').classList.add('on');
+  document.getElementById('output-section').style.display = 'none';
+
+  setTimeout(function() {
+    try {
+      var students = parseStudents(raw);
+      if (!students.length) throw new Error('لم يتم العثور على بيانات. تأكدي من النص.');
+
+      msgContent = buildMsg(students, day, com, ph);
+      vcfContent = buildVCF(students, pre);
+
+      document.getElementById('msg-out').textContent = msgContent;
+      document.getElementById('vcf-raw').textContent = vcfContent;
+      document.getElementById('vcf-count').textContent = students.length + ' طالبة';
+      document.getElementById('output-section').style.display = 'block';
+      document.getElementById('output-section').scrollIntoView({ behavior:'smooth', block:'start' });
+    } catch(e) {
+      showErr('❌ ' + e.message);
+    } finally {
+      document.getElementById('ov').classList.remove('on');
+    }
+  }, 150);
+}
+
+function parseStudents(raw) {
+  var lines = raw
+    .replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\t/g,'\n')
+    .replace(/ {3,}/g,'\n')
+    .split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l.length > 0; });
+
+  var timeReg   = /^\d{1,2}[:\.]\d{2}$/;
+  var periodReg = /^[فضظعم]$/;
+  var phoneReg  = /^\+?\d{9,15}$/;
+  var seqReg    = /^\d{5,7}$/;
+  var arabReg   = /[\u0600-\u06FF]/;
+
+  var students = [];
+  var i = 0;
+
+  while (i < lines.length) {
+    var line = lines[i];
+    if (timeReg.test(line)) {
+      var time   = line.replace('.', ':');
+      var period = '';
+      var name   = '';
+      var phone  = '';
+      var j      = i + 1;
+
+      while (j < lines.length && !timeReg.test(lines[j])) {
+        var l = lines[j];
+        if (periodReg.test(l) && !period) {
+          period = l;
+        } else if (seqReg.test(l)) {
+          // تجاهل الرقم التسلسلي
+        } else if (phoneReg.test(l) && name && !phone) {
+          phone = l;
+        } else if (arabReg.test(l) && !name) {
+          name = l;
+        } else if (arabReg.test(l) && name && !phone) {
+          name = name + ' ' + l;
+        }
+        j++;
+      }
+
+      if (name) {
+        students.push({ time:time, period:period, name:name.trim(), phone:phone.trim() });
+      }
+      i = j;
+    } else {
+      i++;
+    }
+  }
+  return students;
+}
+
+function toMin(t) {
+  var p = t.split(':');
+  return (parseInt(p[0])||0)*60 + (parseInt(p[1])||0);
+}
+
+function buildMsg(students, day, com, contactPh) {
+  var groups = {};
+  for (var k=0; k<students.length; k++) {
+    var s = students[k];
+    var label = PERIOD_MAP[s.period] || 'غير محدد';
+    if (!groups[label]) groups[label] = [];
+    groups[label].push(s);
+  }
+  for (var g in groups) {
+    groups[g].sort(function(a,b){ return toMin(a.time)-toMin(b.time); });
+  }
+
+  var msg = '🗓 اختبارات ' + day + '\n🎀 اللجنة ' + com + ' 🎀\n';
+  for (var pi=0; pi<PERIOD_ORDER.length; pi++) {
+    var lbl = PERIOD_ORDER[pi];
+    if (!groups[lbl] || !groups[lbl].length) continue;
+    msg += lbl + ' ✨\n';
+    for (var si=0; si<groups[lbl].length; si++) {
+      msg += groups[lbl][si].time + ' - ' + groups[lbl][si].name + '\n';
+    }
+  }
+  msg += 'للتواصل📱\n' + (contactPh || '+9###########');
+  return msg;
+}
+
+function buildVCF(students, prefix) {
+  var lines = [];
+  for (var i=0; i<students.length; i++) {
+    var s = students[i];
+    lines.push('BEGIN:VCARD');
+    lines.push('VERSION:3.0');
+    lines.push('FN:' + prefix + ' ' + s.name);
+    lines.push('TEL:' + s.phone);
+    lines.push('END:VCARD');
+  }
+  return lines.join('\n');
+}
+
+function copyMsg() { copyText(msgContent, '✅ تم نسخ الرسالة!'); }
+function copyVCF() { copyText(vcfContent, '✅ تم نسخ VCF!'); }
+
+function copyText(text, ok) {
+  if (!text) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function(){ toast(ok); }).catch(function(){ fallCopy(text, ok); });
+  } else {
+    fallCopy(text, ok);
+  }
+}
+
+function fallCopy(text, ok) {
+  var ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try { document.execCommand('copy'); toast(ok); } catch(e) { toast('❌ تعذّر النسخ'); }
+  document.body.removeChild(ta);
+}
+
+function getFileName() {
+  var day = document.getElementById('exam-day').value.trim().replace(/\s/g,'-') || 'students';
+  return 'لجنة-' + day + '.vcf';
+}
+
+function downloadVCF() {
+  if (!vcfContent) return;
+  try {
+    var blob = new Blob([vcfContent], { type: 'text/vcard;charset=utf-8' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href = url; a.download = getFileName();
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    toast('✅ تم التحميل!');
+  } catch(e) {
+    toast('❌ جربي زر المشاركة');
+  }
+}
+
+function openVCF() {
+  if (!vcfContent) return;
+  // طريقة 1: data URI — يفتح مباشرة في تطبيق جهات الاتصال على Android
+  try {
+    var encoded = 'data:text/vcard;charset=utf-8,' + encodeURIComponent(vcfContent);
+    var a = document.createElement('a');
+    a.href = encoded;
+    a.download = getFileName();
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    toast('✅ افتحي الملف من التنزيلات');
+  } catch(e) {
+    toast('❌ جربي طريقة النسخ اليدوي');
+    showTab('mn');
+  }
+}
+
+function showTab(name) {
+  document.getElementById('tab-dl').style.display   = name === 'dl' ? '' : 'none';
+  document.getElementById('tab-mn').style.display   = name === 'mn' ? '' : 'none';
+  document.getElementById('tab-dl-btn').className   = 'tab' + (name === 'dl' ? ' active' : '');
+  document.getElementById('tab-mn-btn').className   = 'tab' + (name === 'mn' ? ' active' : '');
+}
+
+function showErr(msg) {
+  var e = document.getElementById('err');
+  e.textContent = msg; e.style.display = 'block';
+}
+
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+</script>
+</body>
+</html>
