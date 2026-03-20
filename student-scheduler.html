@@ -309,7 +309,7 @@ textarea {
   <div class="mt">
     <label>بادئة اسم جهة الاتصال في VCF</label>
     <input type="text" id="vcf-prefix" value="21-">
-    <p class="hint">مثال: <strong>21-</strong> ← سيكون الاسم: <strong>21- شفاء محمد</strong></p>
+    <p class="hint">مثال: <strong>21-</strong> ← سيكون الاسم: <strong>21- أسماء محمد</strong></p>
   </div>
 </div>
 
@@ -498,7 +498,7 @@ function buildMsg(students, day, com, contactPh) {
       msg += groups[lbl][si].time + ' - ' + groups[lbl][si].name + '\n';
     }
   }
-  msg += 'للتواصل📱\n' + (contactPh || '+9###########');
+  msg += 'للتواصل📱\n' + (contactPh || '+9639########');
   return msg;
 }
 
