@@ -7,7 +7,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
 :root {
-  
+  --rose: #c2185b; --rose-light: #f8bbd9; --rose-pale: #fce4ec;
   --rose-deep: #880e4f; --cream: #fff9f5; --text: #2d1b2e;
   --muted: #7a5c6e; --border: #e8c8d8; --shadow: rgba(194,24,91,0.12);
   --blue: #1a237e; --blue-pale: #e8eaf6;
@@ -90,7 +90,7 @@ textarea { min-height: 220px; resize: vertical; line-height: 1.8; }
 <div class="card">
   <h2>📋 البيانات المنسوخة من Word</h2>
   <label>الصقي النص كاملاً هنا — بأي تنسيق</label>
-  
+  <textarea id="raw-data" placeholder="6:30&#10;ف&#10;113442&#10;شفاء &#10;963946672366&#10;6:45&#10;ف&#10;..."></textarea>
   <div class="legend">
     <span>ف = فجراً</span><span>ض = ضحىً</span><span>ظ = ظهراً</span><span>ع = عصراً</span><span>م = مساءً</span>
   </div>
